@@ -1,5 +1,7 @@
 //Para obtener direcciones de manera automatica
 const path = require('path');
+const CopyPlugin = require("copy-webpack-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 //Configuración total de WEBPACK
@@ -16,7 +18,9 @@ module.exports = {
         //Usaremos el directorio por defecto dist
         path: path.resolve(__dirname, 'dist'),
         //Establezco el nombre de file para la salida
-        filename: 'main.js'
+        filename: 'main.js', 
+        //Salida de las imagenes optimizadas
+        assetModuleFilename: 'assets/images/[hash][ext][query]',
     },
     //Definimos las extensiones de los archivos de salida
     //Que se leeran el mas común js
@@ -26,15 +30,33 @@ module.exports = {
 
     //CONFIGURACION LOADERS
     module: {
-        //BABEL
+        //Relgas generales
         rules: [
+            //BABEL
             {
             test: /\.m?js$/,
             exclude: /node_modules/,
             use: {
                 loader: 'babel-loader'
             }
-            }
+            },
+            //IMAGENES
+            {
+                //Extensiones
+                test: /\.png/,
+                //Salidas optimizadas
+                type: 'asset/resource'
+            },
+            //CSS
+            {
+                test: /\.css|.styl$/i,
+                use:[
+                    MiniCssExtractPlugin.loader,
+                    "css-loader",
+                    "stylus-loader"
+                ],
+            },
+
         ]
     },
 
@@ -49,7 +71,20 @@ module.exports = {
             //Establece el nombre de archivo de salida
             filename: './index.html'
         }),
-    ],
+        //CSS
+        new MiniCssExtractPlugin(),
+
+        //COPIA DE ARCHIVOS
+        new CopyPlugin({
+            patterns: [{
+                //Defino desde donde y hacia donde
+                from: path.resolve(__dirname,"src", "assets/images"),
+                to: "assets/images"
+            },
+            //   { from: "other", to: "public" },
+            ],
+        }),
+],
 }
 
 
